@@ -1,4 +1,3 @@
-#include <algorithm>
 #include <cstdlib>
 #include <ctime>
 #include <fstream>
@@ -8,6 +7,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+
 using namespace std;
 
 auto start_time = 0;
@@ -59,7 +59,9 @@ vector<string> bpe_tokenize(const vector<string> &corpus, int num_merges) {
             }
         }
 
-        if (merge_iter % 100 == 0) cout << "Итерация " << merge_iter + 1 << ": найдено " << pair_freq.size() << " уникальных пар." << endl;
+        if (merge_iter % 100 == 0)
+            cout << "Итерация " << merge_iter + 1 << ": найдено " << pair_freq.size() << " уникальных пар. (" << double(clock() - start_time) / CLOCKS_PER_SEC
+                 << " сек)" << endl;
 
         // Если не найдено ни одной пары, выходим из цикла
         if (pair_freq.empty()) break;
@@ -70,7 +72,8 @@ vector<string> bpe_tokenize(const vector<string> &corpus, int num_merges) {
         for (const auto &entry : pair_freq) {
             if (entry.second > max_freq) {
                 // || entry.first.second.find("</w>") != string::npos
-                if (entry.first.first.find("</w>") != string::npos ) continue; // Пропускаем если в паре в первом токене есть </w>
+                if (entry.first.first.find("</w>") != string::npos || entry.first.first.find("</n>") != string::npos)
+                    continue;  // Пропускаем если в паре в первом токене есть </w> или </n>
                 max_freq = entry.second;
                 best_pair = entry.first;
             }

@@ -108,13 +108,8 @@ vector<vector<int>> load_text(const string &filename, unordered_map<string, int>
     cout << "Примеры закодированных предложений: " << '\n';
 
     for (int i = 0; i < min(10, (int)sentences[0].size()); i++) {
-        cout << index2word[i] << " ";
+        cout << sentences[0][i] << " ";
     }
-    cout << '\n';
-    for (int i = 0; i < min(10, (int)sentences[0].size()); i++) {
-        cout << i << " ";
-    }
-    cout << '\n';
     cout << endl;
 
     return sentences;
@@ -214,6 +209,19 @@ void train_word2vec(const vector<vector<int>> &sentences, int vocab_size, int d,
     }
 }
 
+// Функция для нормировки эмбеддингов: каждая строка делится на её евклидову норму.
+void normalize_embeddings(vector<vector<double>> &embeddings) {
+    for (auto &vec : embeddings) {
+        double norm = 0.0;
+        // Вычисляем квадрат нормы
+        for (double val : vec) norm += val * val;
+        norm = sqrt(norm);
+        // Если норма не равна нулю, нормируем каждый элемент вектора
+        if (norm > 0)
+            for (double &val : vec) val /= norm;
+    }
+}
+
 // Сохраняет обученные эмбеддинги в файл.
 //   vocab_size d – количество слов и размерность векторов.
 //   vocab_size слов и соответсвующих векторов
@@ -266,6 +274,12 @@ int main(int argc, char *argv[]) {
 
     // Сохраняем обученные эмбеддинги в файл
     save_embeddings(embeddings_path, word_vectors, index2word);
+
+    // Нормируем эмбеддинги
+    normalize_embeddings(word_vectors);
+
+    // Сохраняем нормированные эмбеддинги в файл
+    save_embeddings(embeddings_path.erase(embeddings_path.size() - 4) + "_norm.txt", word_vectors, index2word);
 
     auto end_time = clock();
     double elapsed_time = double(end_time - start_time) / CLOCKS_PER_SEC;
